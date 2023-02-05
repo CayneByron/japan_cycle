@@ -10,13 +10,13 @@ import 'package:latlong2/latlong.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:icon_decoration/icon_decoration.dart';
+import 'package:intl/intl.dart';
 
 class Landing extends StatefulWidget {
   const Landing({Key? key}) : super(key: key);
 
   @override
   State<Landing> createState() => _LandingState();
-
 }
 
 
@@ -64,6 +64,9 @@ class _LandingState extends State<Landing> {
 
   @override
   Widget build(BuildContext context) {
+
+    print(DateFormat.yMMMd().format(DateTime.now()));
+
     MouseRegion popupContainer = MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -90,7 +93,7 @@ class _LandingState extends State<Landing> {
                 ),
                 subtitle: MouseRegion(
                     cursor: SystemMouseCursors.click,
-                    child: Text('@ ${lastUpdated.toLocal().toIso8601String().replaceAll('T', ' ')}')
+                    child: Text('@ ${DateFormat('yMMMMd').format(lastUpdated.toLocal())} ${DateFormat.Hm().format(lastUpdated.toLocal())}')
                 ),
               ),
             ],
@@ -1030,7 +1033,7 @@ class _LandingState extends State<Landing> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 300),
+                const SizedBox(height: 20),
               ],
             ),
           ),
