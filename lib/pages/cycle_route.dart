@@ -287,40 +287,38 @@ class _CycleRouteState extends State<CycleRoute> {
                   ),
                 ),
               ),
-              GestureDetector(
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8.0), bottomRight: Radius.circular(8.0)),
-                  child: SizedBox(
-                    width: 1200,
-                    height: 500,
-                    child: FlutterMap(
-                      mapController: mapController,
-                      options: MapOptions(
-                        center: LatLng(mapLat, mapLng),
-                        zoom: finalZoom,
+              ClipRRect(
+                borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8.0), bottomRight: Radius.circular(8.0)),
+                child: SizedBox(
+                  width: 1200,
+                  height: 500,
+                  child: FlutterMap(
+                    mapController: mapController,
+                    options: MapOptions(
+                      center: LatLng(mapLat, mapLng),
+                      zoom: finalZoom,
+                    ),
+                    layers: [
+                      TileLayerOptions(
+                        urlTemplate:
+                        'https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=ed4d648a198c4a5184877c68c3271e70',
+                        subdomains: ['a', 'b', 'c'],
+                        userAgentPackageName: 'dev.fleaflet.flutter_map.example',
                       ),
-                      layers: [
-                        TileLayerOptions(
-                          urlTemplate:
-                          'https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=ed4d648a198c4a5184877c68c3271e70',
-                          subdomains: ['a', 'b', 'c'],
-                          userAgentPackageName: 'dev.fleaflet.flutter_map.example',
-                        ),
-                        PolylineLayerOptions(
-                          polylines: List.generate(pointsArray.length, (index) {
-                            return Polyline(
-                                points: pointsArray[index],
-                                strokeWidth: 5,
-                                color: Colors.blue.shade900,//Color(0xFF0D47A1),
-                                borderColor: Colors.white,
-                                borderStrokeWidth: 5
-                            );
-                          }),
-                        ),
-                        MarkerLayerOptions(markers: markers),
-                      ],
-                    )
-                  ),
+                      PolylineLayerOptions(
+                        polylines: List.generate(pointsArray.length, (index) {
+                          return Polyline(
+                              points: pointsArray[index],
+                              strokeWidth: 5,
+                              color: Colors.blue.shade900,//Color(0xFF0D47A1),
+                              borderColor: Colors.white,
+                              borderStrokeWidth: 5
+                          );
+                        }),
+                      ),
+                      MarkerLayerOptions(markers: markers),
+                    ],
+                  )
                 ),
               ),
               const SizedBox(height: 16),

@@ -1,17 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart';
+import 'package:flutter/services.dart';
+import 'package:japan_cycling/models/last_known_location.dart';
+import 'package:japan_cycling/providers/LastLocationProvider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'dart:async';
+import 'dart:convert';
+import 'package:icon_decoration/icon_decoration.dart';
 
 class Landing extends StatefulWidget {
   const Landing({Key? key}) : super(key: key);
 
   @override
   State<Landing> createState() => _LandingState();
+
 }
 
 
 
 class _LandingState extends State<Landing> {
+  double mapLat = 36.452571;
+  double mapLng = 136.510094;
+  LatLng point = LatLng(36.452571, 136.510094);
+  double mapZoom = 10.0;
+  double finalZoom = 10.0;
+  MapController mapController = MapController();
+  // List<List<LatLng>> pointsArray = <List<LatLng>>[];
+  List<Marker> markers = <Marker>[];
+  bool popupShown = false;
 
   void openRoutePage(String route) async {
     final prefs = await SharedPreferences.getInstance();
@@ -23,7 +42,99 @@ class _LandingState extends State<Landing> {
   }
 
   @override
+  void initState () {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      _asyncMethod();
+    });
+
+  }
+
+  _asyncMethod() async {
+    LastKnownLocation lkl = await LastLocationProvider.getRecords();
+    setState(() {
+      mapLat = lkl.latitude;
+      mapLng = lkl.longitude;
+      point = LatLng(lkl.latitude, lkl.longitude);
+      mapController.move(point, 10.0);
+    });
+
+  }
+
+  @override
   Widget build(BuildContext context) {
+    MouseRegion popupContainer = MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () async {
+            setState(() {
+              popupShown = false;
+            });
+        }, // remove the popup if we click on it
+        child: Card(
+          elevation: 20.0,
+          child: Column(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              ListTile(
+                leading: const MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Icon(Icons.directions_bike_sharp,
+                      color: Colors.pink,
+                    )
+                ),
+                title: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Text('$mapLat, $mapLng'),
+                ),
+                subtitle: const MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: Text('Sun, 05 Feb 2023 00:40:25')
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    markers = <Marker>[
+      Marker(
+          width: 80,
+          height: 80,
+          point: point,
+          builder: (ctx) {
+            return MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () async {
+                  setState(() {
+                    popupShown = !popupShown;
+                  });
+                },
+                child: const DecoratedIcon(
+                  icon: Icon(Icons.directions_bike_outlined, color: Colors.pink, size: 35),
+                  decoration: IconDecoration(
+                    shadows: [Shadow(blurRadius: 5, offset: Offset(5, 0))],
+                  ),
+                ),
+              ),
+            );
+          }
+      ),
+    ];
+
+    if (popupShown == true) {
+      markers.add(
+          Marker(
+            width: 300.0,
+            height: 75.0,
+            point: point, // Probably want to add an offset so it appears above the point, rather than over it
+            builder: (ctx) => popupContainer,
+          )
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -874,6 +985,51 @@ class _LandingState extends State<Landing> {
                     ),
                   ),
                 ),
+
+                SizedBox(
+                  width: 1200,
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: SelectableText('Last Known Location', style: TextStyle(
+                              fontFamily: 'Archivo',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 24
+                          )),
+                        ),
+                        ClipRRect(
+                          borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8.0), bottomRight: Radius.circular(8.0), topLeft: Radius.circular(8.0), topRight: Radius.circular(8.0)),
+                          child: SizedBox(
+                              width: 1200,
+                              height: 500,
+                              child: FlutterMap(
+                                mapController: mapController,
+                                options: MapOptions(
+                                  center: LatLng(mapLat, mapLng),
+                                  zoom: finalZoom,
+                                ),
+                                layers: [
+                                  TileLayerOptions(
+                                    urlTemplate:
+                                    'https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=ed4d648a198c4a5184877c68c3271e70',
+                                    subdomains: ['a', 'b', 'c'],
+                                    userAgentPackageName: 'dev.fleaflet.flutter_map.example',
+                                  ),
+                                  MarkerLayerOptions(markers: markers),
+                                ],
+                              )
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 300),
               ],
             ),
           ),
