@@ -27,6 +27,7 @@ class _LandingState extends State<Landing> {
   LatLng point = LatLng(36.452571, 136.510094);
   double mapZoom = 10.0;
   double finalZoom = 10.0;
+  DateTime lastUpdated = DateTime.now();
   MapController mapController = MapController();
   // List<List<LatLng>> pointsArray = <List<LatLng>>[];
   List<Marker> markers = <Marker>[];
@@ -57,8 +58,8 @@ class _LandingState extends State<Landing> {
       mapLng = lkl.longitude;
       point = LatLng(lkl.latitude, lkl.longitude);
       mapController.move(point, 10.0);
+      lastUpdated = lkl.lastUpdated;
     });
-
   }
 
   @override
@@ -85,11 +86,11 @@ class _LandingState extends State<Landing> {
                 ),
                 title: MouseRegion(
                     cursor: SystemMouseCursors.click,
-                    child: Text('$mapLat, $mapLng'),
+                    child: Text('($mapLat, $mapLng)'),
                 ),
-                subtitle: const MouseRegion(
+                subtitle: MouseRegion(
                     cursor: SystemMouseCursors.click,
-                    child: Text('Sun, 05 Feb 2023 00:40:25')
+                    child: Text('@ ${lastUpdated.toLocal().toIso8601String().replaceAll('T', ' ')}')
                 ),
               ),
             ],
